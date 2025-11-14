@@ -10,7 +10,7 @@ on:
       - test
 
 jobs:
-  pkgcore (pkgdev and pkgcheck):
+  pkgcore:
     runs-on: ubuntu-latest
     container:
       image: gentoo/stage3:latest
