@@ -59,8 +59,8 @@ jobs:
       - name: Configure repos.conf
         run: |
           mkdir -p /etc/portage/repos.conf
-          cat > /etc/portage/repos.conf/custom-overlay.conf <<EOF
-          [custom-overlay]
+          cat > /etc/portage/repos.conf/lentoo.conf <<EOF
+          [lentoo]
           location = /var/db/repos/lentoo
           auto-sync = no
           EOF
