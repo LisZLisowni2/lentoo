@@ -2,6 +2,22 @@
 
 set -e
 
+version_compare() {
+    local v1="$1" # First value 
+    local op="$2" # Operator
+    local v2="$3" # Second value
+    local min=$(printf '%s\n' "$v1" "$v2" | sort -V | head -n1) # Minimal
+
+    case "$op" in
+        ">=") [[ "$min" == "$v2" ]] ;;
+        "<=") [[ "$min" == "$v1" ]] ;;
+        ">")  [[ "$min" == "$v2" && "$v1" != "$v2" ]] ;;
+        "<")  [[ "$min" == "$v1" && "$v1" != "$v2" ]] ;;
+        "=")  [[ "$v1" == "$v2" ]] ;;
+        *)    return 1 ;;
+    esac
+}
+
 SKIP_SYNC=false
 REQUIRE_CONFIRMATION=true
 
@@ -36,7 +52,7 @@ for pkg in "${PKGS[@]}"; do
     CATEGORY=${BASIC%%/*}
     BASE=${BASIC##*/}
     NAME=${BASE%%-*}
-    PKGVER=${BASE##*/}
+    PKGVER=${BASE##*-}
     SRC_PATH="$GENTOO_OVERLAY/$CATEGORY/$NAME"
     DST_PATH="$LENTOO_WORK_OVERLAY/$CATEGORY/$NAME"
 
@@ -44,23 +60,32 @@ for pkg in "${PKGS[@]}"; do
         echo "→ Found $SRC_PATH"
         mkdir -p "$(dirname "$DST_PATH")"
         echo "📆 Check versions for $NAME"
-        VERSIONS_RAW=$(ls "$GENTOO_OVERLAY/$CATEGORY/$NAME/" | grep ebuild | sed 's/ /;/')
-        IFS=' ' read -ra VERSIONS <<< "$VERSIONS_RAW"
-        if [[ $VERSION =~ ^[=\<\>~]+ ]]; then
-            op=${BASH_REMATCH[0]}
-            echo $op
-        for version in "${VERSIONS[@]}"; do
-            VERSION_WITHOUT_EXT=${version%.*}
-            VERSION_READY=${VERSION_WITHOUT_EXT#*-}
-            # certain version
-	    fi;
+        if [[ $PKG =~ ^[=\<\>~]+ ]]; then
+            OPERATOR=${BASH_REMATCH[0]}
+	    fi
+        VERSIONS_TO_COPY=()
+        for VERSION_READ in $GENTOO_OVERLAY/$CATEGORY/$NAME/*.ebuild; do
+            VERSION_READY=${VERSION_READ##*/}
+            VERSION_WITHOUT_EXT=${VERSION_READY%.*}
+            VERSION=${VERSION_WITHOUT_EXT#*-}
+            
+            if version_compare "$VERSION" "$OPERATOR" "$PKGVER"; then
+                VERSIONS_TO_COPY+=("$VERSION")
+            fi 
         done
-        sudo rsync -av -n "$SRC_PATH/" "$DST_PATH/"
-        echo "❓ Do you accept? [Y/n] "
+        echo "These versions will be synced: "
+        for VER in "${VERSIONS_TO_COPY[@]}"; do
+            echo $VER
+        done
+        echo ""
+        echo "❓ Do you accept (IT OVERWRITE EXISTED FILES)? [Y/n] "
         read CONFIRM
         if [[ $CONFIRM != "n" && $CONFIRM != "N" ]]; then 
-            sudo rsync -a "$SRC_PATH/" "$DST_PATH/"
+            mkdir -p $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME
             sudo chown $USER:$USER -R "$LENTOO_WORK_OVERLAY/" 
+            for VER in "${VERSIONS_TO_COPY[@]}"; do
+                sudo cp $GENTOO_OVERLAY/$CATEGORY/$NAME/$NAME-$VER.ebuild $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME/$NAME-$VER.ebuild
+            done
             echo "✅ Copied to Lentoo overlay."
         fi
     else

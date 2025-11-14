@@ -1,1 +1,1 @@
->=dev-lang/spidermonkey-140.3.0
+<=dev-lang/spidermonkey-140.1.0
