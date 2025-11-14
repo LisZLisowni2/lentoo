@@ -20,6 +20,7 @@ version_compare() {
 
 SKIP_SYNC=false
 REQUIRE_CONFIRMATION=true
+COPY_METADATA=false
 
 case "$@" in
     "-s" | "--skip-sync")
@@ -27,6 +28,9 @@ case "$@" in
         ;;
     "-y" | "--yes")
         REQUIRE_CONFIRMATION=false
+        ;;
+    "-m" | "--metadata")
+        COPY_METADATA=true
         ;;
 esac
 
@@ -44,6 +48,7 @@ echo $LENTOO_WORK_OVERLAY/packages.list
 read -r PKGS <<< $(tr '\n' ' ' < "$LENTOO_WORK_OVERLAY/packages.list")
 
 for pkg in "${PKGS[@]}"; do
+    IS_CANCELED=false
     PKG=$(echo $pkg | xargs)
     [[ -z "$PKG" ]] && continue
 
@@ -77,15 +82,28 @@ for pkg in "${PKGS[@]}"; do
         for VER in "${VERSIONS_TO_COPY[@]}"; do
             echo $VER
         done
+        if $COPY_METADATA; then
+            echo metadata.xml
+        fi
         echo ""
-        echo "❓ Do you accept (IT OVERWRITE EXISTED FILES)? [Y/n] "
-        read CONFIRM
-        if [[ $CONFIRM != "n" && $CONFIRM != "N" ]]; then 
+        if $REQUIRE_CONFIRMATION; then
+            echo "❓ Do you accept (IT OVERWRITE EXISTED FILES)? [Y/n] "
+            read CONFIRM
+            if [[ $CONFIRM == "n" || $CONFIRM == "N" ]]; then 
+                IS_CANCELED=true
+                echo "❌ Canceled"
+            fi
+        fi
+
+        if ! $IS_CANCELED; then
             mkdir -p $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME
             sudo chown $USER:$USER -R "$LENTOO_WORK_OVERLAY/" 
             for VER in "${VERSIONS_TO_COPY[@]}"; do
                 sudo cp $GENTOO_OVERLAY/$CATEGORY/$NAME/$NAME-$VER.ebuild $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME/$NAME-$VER.ebuild
             done
+            if $COPY_METADATA; then
+                sudo cp $GENTOO_OVERLAY/$CATEGORY/$NAME/metadata.xml $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME/metadata.xml
+            fi
             echo "✅ Copied to Lentoo overlay."
         fi
     else
