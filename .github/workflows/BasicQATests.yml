@@ -59,7 +59,7 @@ jobs:
       - name: Check metadata.xml files
         run: |
           # Test: All directories have metadata.xml?
-          for category in $(find . -maxdepth 2 -type d -not -wholename '.*/.*' -not -name 'profiles' -not -name 'metadata' -not -name 'scripts'); do
+          for category in $(find . -mindepth 1 -maxdepth 2 -type d -not -wholename '.*/.*' -not -name 'profiles' -not -name 'metadata' -not -name 'scripts'); do
             if [ ! -f "$category/metadata.xml" ]; then
               echo "❌ No metadata.xml in $category"
               exit 1
