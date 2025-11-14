@@ -1,0 +1,72 @@
+name: Gentoo Overlay QA
+
+on:
+  pull_request:
+    branches:
+      - test
+      - main
+  push:
+    branches:
+      - test
+
+jobs:
+  pkgcore:
+    runs-on: ubuntu-latest
+    container:
+      image: gentoo/stage3:latest
+    
+    steps:
+      - name: Checkout overlay
+        uses: actions/checkout@v3
+      
+      - name: Update Portage
+        run: |
+          emerge-webrsync
+          emerge --sync
+      
+      - name: Install QA tools
+        run: |
+          emerge -v dev-util/pkgcheck dev-util/pkgdev
+          
+      - name: Configure repos.conf
+        run: |
+          mkdir -p /etc/portage/repos.conf
+          cat > /etc/portage/repos.conf/lentoo.conf <<EOF
+          [lentoo]
+          location = /var/db/repos/lentoo
+          auto-sync = no
+          EOF
+          cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
+      
+      - name: Run pkgcheck
+        run: |
+          pkgcheck scan --net
+      
+      - name: Check manifest
+        run: |
+          for ebuild in $(find . -name '*.ebuild'); do
+            dir=$(dirname "$ebuild")
+            pushd "$dir"
+            pkgdev manifest
+            popd
+          done
+
+  metadata-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check metadata.xml files
+        run: |
+          # Test: All directories have metadata.xml?
+          for category in $(find . -mindepth 1 -maxdepth 2 -type d -not -wholename '.*/.*' -not -name 'profiles' -not -name 'metadata' -not -name 'scripts'); do
+            if [ ! -f "$category/metadata.xml" ]; then
+              echo "❌ No metadata.xml in $category"
+              exit 1
+            fi
+          done
+          
+      - name: Validate XML
+        run: |
+          apt-get update && apt-get install -y libxml2-utils
+          find . -name "*.xml" -exec xmllint --noout {} \;
