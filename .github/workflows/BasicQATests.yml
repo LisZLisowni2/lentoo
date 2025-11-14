@@ -81,7 +81,7 @@ jobs:
       - name: Check metadata.xml files
         run: |
           # Sprawdź czy wszystkie kategorie mają metadata.xml
-          for category in $(find . -maxdepth 1 -type d -not -name '.*' -not -name 'profiles' -not -name 'metadata'); do
+          for category in $(find . -maxdepth 1 -type d -not -name '.*' -not -name 'profiles' -not -name 'metadata' -not -name 'scripts'); do
             if [ ! -f "$category/metadata.xml" ]; then
               echo "❌ No metadata.xml in $category"
               exit 1
