@@ -1,0 +1,94 @@
+name: Gentoo Overlay QA
+
+on:
+  pull_request:
+    branches:
+      - test
+      - main
+  push:
+    branches:
+      - test
+
+jobs:
+  pkgcheck:
+    runs-on: ubuntu-latest
+    container:
+      image: gentoo/stage3:latest
+    
+    steps:
+      - name: Checkout overlay
+        uses: actions/checkout@v3
+      
+      - name: Update Portage
+        run: |
+          emerge-webrsync
+          emerge --sync
+      
+      - name: Install QA tools
+        run: |
+          emerge -v app-portage/pkgcheck app-portage/pkgdev
+      
+      - name: Run pkgcheck
+        run: |
+          pkgcheck scan --net
+      
+      - name: Check manifest
+        run: |
+          for ebuild in $(find . -name '*.ebuild'); do
+            dir=$(dirname "$ebuild")
+            pushd "$dir"
+            pkgdev manifest
+            popd
+          done
+
+  pkgdev:
+    runs-on: ubuntu-latest
+    container:
+      image: gentoo/stage3:latest
+    
+    steps:
+      - name: Checkout overlay
+        uses: actions/checkout@v3
+      
+      - name: Setup overlay
+        run: |
+          emerge-webrsync
+          mkdir -p /var/db/repos/lentoo
+          cp -r . /var/db/repos/lentoo/
+          
+      - name: Configure repos.conf
+        run: |
+          mkdir -p /etc/portage/repos.conf
+          cat > /etc/portage/repos.conf/custom-overlay.conf <<EOF
+          [custom-overlay]
+          location = /var/db/repos/lentoo
+          auto-sync = no
+          EOF
+      
+      - name: Install pkgdev
+        run: emerge -v dev-util/pkgdev dev-util/pkgcheck
+      
+      - name: Run pkgdev and pkgcheck
+        run: |
+          cd /var/db/repos/lentoo
+          pkgcheck scan
+
+  metadata-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check metadata.xml files
+        run: |
+          # Sprawdź czy wszystkie kategorie mają metadata.xml
+          for category in $(find . -maxdepth 1 -type d -not -name '.*' -not -name 'profiles' -not -name 'metadata'); do
+            if [ ! -f "$category/metadata.xml" ]; then
+              echo "❌ No metadata.xml in $category"
+              exit 1
+            fi
+          done
+          
+      - name: Validate XML
+        run: |
+          apt-get update && apt-get install -y libxml2-utils
+          find . -name "*.xml" -exec xmllint --noout {} \;
