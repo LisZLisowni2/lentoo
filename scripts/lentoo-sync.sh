@@ -22,30 +22,37 @@ SKIP_SYNC=false
 REQUIRE_CONFIRMATION=true
 COPY_METADATA=false
 
-case "$@" in
-    "-s" | "--skip-sync")
-        SKIP_SYNC=true
-        ;;
-    "-y" | "--yes")
-        REQUIRE_CONFIRMATION=false
-        ;;
-    "-m" | "--metadata")
-        COPY_METADATA=true
-        ;;
-esac
+for ARG in "$@"; do
+    case "$ARG" in
+        "-s" | "--skip-sync")
+            SKIP_SYNC=true
+            ;;
+        "-y" | "--yes")
+            REQUIRE_CONFIRMATION=false
+            ;;
+        "-m" | "--metadata")
+            COPY_METADATA=true
+            ;;
+    esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LENTOO_WORK_OVERLAY="$SCRIPT_DIR/.."
+PACKAGES_LIST_FILE="$LENTOO_WORK_OVERLAY/packages.list"
 GENTOO_OVERLAY="/var/db/repos/gentoo"
+
+[[ ! -f "$PACKAGES_LIST_FILE" ]] && { echo "$PACKAGES_LIST_FILE file not found."; exit; }
 
 if ! $SKIP_SYNC; then
     echo "🔄 Syncing Gentoo repository..."
     sudo emaint sync --repo gentoo || sudo emerge --sync
 fi
 
-echo $LENTOO_WORK_OVERLAY/packages.list
-
-read -r PKGS <<< $(tr '\n' ' ' < "$LENTOO_WORK_OVERLAY/packages.list")
+PKGS=()
+while IFS= read -r PKG
+do
+    PKGS+=("$PKG")
+done <<< $(cat "$PACKAGES_LIST_FILE")
 
 for pkg in "${PKGS[@]}"; do
     IS_CANCELED=false
@@ -102,13 +109,13 @@ for pkg in "${PKGS[@]}"; do
 
         if ! $IS_CANCELED; then
             mkdir -p $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME
-            sudo chown $USER:$USER -R "$LENTOO_WORK_OVERLAY/" 
             for VER in "${VERSIONS_TO_COPY[@]}"; do
                 sudo cp $SRC_PATH/$NAME-$VER.ebuild $DST_PATH/
             done
             if $COPY_METADATA; then
                 sudo cp $SRC_PATH/metadata.xml $DST_PATH/
             fi
+            sudo chown $USER:$USER -R "$LENTOO_WORK_OVERLAY/" 
             echo "✅ Copied to Lentoo overlay."
         fi
     else
