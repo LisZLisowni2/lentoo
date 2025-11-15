@@ -68,6 +68,11 @@ for pkg in "${PKGS[@]}"; do
         if [[ $PKG =~ ^[=\<\>~]+ ]]; then
             OPERATOR=${BASH_REMATCH[0]}
 	    fi
+
+        if [[ -z "$OPERATOR" ]]; then
+            OPERATOR="="
+        fi
+
         VERSIONS_TO_COPY=()
         for VERSION_READ in $GENTOO_OVERLAY/$CATEGORY/$NAME/*.ebuild; do
             VERSION_READY=${VERSION_READ##*/}
@@ -99,10 +104,10 @@ for pkg in "${PKGS[@]}"; do
             mkdir -p $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME
             sudo chown $USER:$USER -R "$LENTOO_WORK_OVERLAY/" 
             for VER in "${VERSIONS_TO_COPY[@]}"; do
-                sudo cp $GENTOO_OVERLAY/$CATEGORY/$NAME/$NAME-$VER.ebuild $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME/$NAME-$VER.ebuild
+                sudo cp $SRC_PATH/$NAME-$VER.ebuild $DST_PATH/
             done
             if $COPY_METADATA; then
-                sudo cp $GENTOO_OVERLAY/$CATEGORY/$NAME/metadata.xml $LENTOO_WORK_OVERLAY/$CATEGORY/$NAME/metadata.xml
+                sudo cp $SRC_PATH/metadata.xml $DST_PATH/
             fi
             echo "✅ Copied to Lentoo overlay."
         fi
