@@ -67,7 +67,7 @@ KEYWORDS="~amd64 ~arm ~arm64 ~loong ~ppc ~ppc64 ~riscv ~x86"
 
 IUSE="clang cpu_flags_arm_neon debug +jit test"
 
-# RESTRICT="test"
+#RESTRICT="test"
 RESTRICT="!test? ( test )"
 
 BDEPEND="${PYTHON_DEPS}
