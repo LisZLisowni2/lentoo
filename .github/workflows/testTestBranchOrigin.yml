@@ -9,9 +9,8 @@ jobs:
     check-testing-branch:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0
+            - name: Checkout overlay
+              uses: actions/checkout@v3
 
             - name: Check if commits exist in testing
               run: |
