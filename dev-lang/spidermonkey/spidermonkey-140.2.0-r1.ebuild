@@ -3,14 +3,14 @@
 
 EAPI="8"
 
-FIREFOX_PATCHSET="firefox-140esr-patches-03.tar.xz"
-SPIDERMONKEY_PATCHSET="spidermonkey-140-patches-02.tar.xz"
+FIREFOX_PATCHSET="firefox-140esr-patches-01.tar.xz"
+SPIDERMONKEY_PATCHSET="spidermonkey-140-patches-01.tar.xz"
 
-LLVM_COMPAT=( 19 20 )
+LLVM_COMPAT=( 21 )
 RUST_NEEDS_LLVM=1
 RUST_MIN_VER=1.82.0
 
-PYTHON_COMPAT=( python3_{11..14} )
+PYTHON_COMPAT=( python3_{11..13} )
 PYTHON_REQ_USE="ncurses,ssl,xml(+)"
 
 WANT_AUTOCONF="2.1"
@@ -86,7 +86,7 @@ BDEPEND="${PYTHON_DEPS}
 DEPEND=">=dev-libs/icu-76.1:=
 	>=dev-libs/nspr-4.35
 	sys-libs/readline:0=
-	virtual/zlib:="
+	sys-libs/zlib"
 RDEPEND="${DEPEND}"
 
 llvm_check_deps() {

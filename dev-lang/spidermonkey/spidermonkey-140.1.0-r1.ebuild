@@ -3,14 +3,14 @@
 
 EAPI="8"
 
-FIREFOX_PATCHSET="firefox-140esr-patches-03.tar.xz"
-SPIDERMONKEY_PATCHSET="spidermonkey-140-patches-02.tar.xz"
+FIREFOX_PATCHSET="firefox-139-patches-03.tar.xz"
+SPIDERMONKEY_PATCHSET="spidermonkey-140-patches-01.tar.xz"
 
-LLVM_COMPAT=( 19 20 21 )
+LLVM_COMPAT=( 21 )
 RUST_NEEDS_LLVM=1
 RUST_MIN_VER=1.82.0
 
-PYTHON_COMPAT=( python3_{11..14} )
+PYTHON_COMPAT=( python3_{11..13} )
 PYTHON_REQ_USE="ncurses,ssl,xml(+)"
 
 WANT_AUTOCONF="2.1"
@@ -60,11 +60,10 @@ DESCRIPTION="Mozilla's JavaScript engine written in C and C++"
 HOMEPAGE="https://spidermonkey.dev https://firefox-source-docs.mozilla.org/js/index.html"
 SRC_URI="${MOZ_SRC_BASE_URI}/source/${MOZ_P}.source.tar.xz -> ${MOZ_P_DISTFILES}.source.tar.xz
 	${PATCH_URIS[@]}"
-S="${WORKDIR}/firefox-${PV%_*}"
-LICENSE="MPL-2.0"
-SLOT="$(ver_cut 1)"
 KEYWORDS="~amd64 ~arm ~arm64 ~loong ~ppc ~ppc64 ~riscv ~x86"
 
+LICENSE="MPL-2.0"
+SLOT="$(ver_cut 1)"
 IUSE="clang cpu_flags_arm_neon debug +jit test"
 
 #RESTRICT="test"
@@ -86,8 +85,10 @@ BDEPEND="${PYTHON_DEPS}
 DEPEND=">=dev-libs/icu-76.1:=
 	>=dev-libs/nspr-4.35
 	sys-libs/readline:0=
-	virtual/zlib:="
+	sys-libs/zlib"
 RDEPEND="${DEPEND}"
+
+S="${WORKDIR}/firefox-${PV%_*}"
 
 llvm_check_deps() {
 	if use clang ; then
