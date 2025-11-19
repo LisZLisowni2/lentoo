@@ -1,0 +1,23 @@
+name: Enforce Testing Branch Flow
+
+on:
+    pull_request:
+        branches: 
+            - main
+
+jobs:
+    check-testing-branch:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout overlay
+              uses: actions/checkout@v3
+
+            - name: Check if commits exist in testing
+              run: |
+                  git fetch origin testing
+                  for commit in $(git rev-list origin/main..HEAD); do
+                    if ! git branch -r --contains $commit | grep -q "origin/testing"; then
+                      echo "Error: Commit $commit not in testing branch"
+                      exit 1
+                    fi
+                  done

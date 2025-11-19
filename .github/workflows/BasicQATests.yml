@@ -1,13 +1,9 @@
 name: Gentoo Overlay QA
 
 on:
-  pull_request:
-    branches:
-      - test
-      - main
   push:
     branches:
-      - main
+      - test
 
 jobs:
   pkgcore:
