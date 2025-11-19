@@ -16,7 +16,7 @@ jobs:
               run: |
                   git fetch origin testing
                   for commit in $(git rev-list origin/main..HEAD); do
-                    if ! git branch -r --contains $commit | grep -q "origin/testing"; then
+                    if ! git branch -r --contains $commit | grep -q "origin/test"; then
                       echo "Error: Commit $commit not in testing branch"
                       exit 1
                     fi
