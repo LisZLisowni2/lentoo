@@ -1,1 +1,2 @@
 >=dev-lang/spidermonkey-140.1.0
+>=llvm-core/llvm-20.0.0
