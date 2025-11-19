@@ -3,14 +3,14 @@
 
 EAPI="8"
 
-FIREFOX_PATCHSET="firefox-140esr-patches-03.tar.xz"
-SPIDERMONKEY_PATCHSET="spidermonkey-140-patches-02.tar.xz"
+FIREFOX_PATCHSET="firefox-140esr-patches-01.tar.xz"
+SPIDERMONKEY_PATCHSET="spidermonkey-140-patches-01.tar.xz"
 
 LLVM_COMPAT=( 21 )
 RUST_NEEDS_LLVM=1
 RUST_MIN_VER=1.82.0
 
-PYTHON_COMPAT=( python3_{11..14} )
+PYTHON_COMPAT=( python3_{11..13} )
 PYTHON_REQ_USE="ncurses,ssl,xml(+)"
 
 WANT_AUTOCONF="2.1"
@@ -67,7 +67,7 @@ KEYWORDS="~amd64 ~arm ~arm64 ~loong ~ppc ~ppc64 ~riscv ~x86"
 
 IUSE="clang cpu_flags_arm_neon debug +jit test"
 
-# RESTRICT="test"
+#RESTRICT="test"
 RESTRICT="!test? ( test )"
 
 BDEPEND="${PYTHON_DEPS}
