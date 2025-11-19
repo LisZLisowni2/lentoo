@@ -12,9 +12,9 @@ jobs:
             - name: Checkout overlay
               uses: actions/checkout@v3
 
-            - name: Check if commits exist in testing
+            - name: Check if commits exist in test branch
               run: |
-                  git fetch origin testing
+                  git fetch origin test
                   for commit in $(git rev-list origin/main..HEAD); do
                     if ! git branch -r --contains $commit | grep -q "origin/test"; then
                       echo "Error: Commit $commit not in testing branch"
