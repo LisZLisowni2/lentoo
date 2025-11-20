@@ -14,8 +14,7 @@ jobs:
 
             - name: Check if commits exist in test branch
               run: |
-                  git fetch origin test
-                  git fetch origin main
+                  git fetch origin
                   COMMITS_TO_CHECK=$(git rev-list origin/main..HEAD)
 
                   if [ -z "$COMMITS_TO_CHECK" ]; then
