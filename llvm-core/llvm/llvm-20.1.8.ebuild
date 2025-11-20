@@ -38,7 +38,6 @@ RDEPEND="
 	xml? ( dev-libs/libxml2:2=[${MULTILIB_USEDEP}] )
 	z3? ( >=sci-mathematics/z3-4.7.1:0=[${MULTILIB_USEDEP}] )
 	zstd? ( app-arch/zstd:=[${MULTILIB_USEDEP}] )
-	polly? ( =llvm-core/polly-$LLVM_VERSION )
 "
 DEPEND="
 	${RDEPEND}
@@ -66,6 +65,7 @@ PDEPEND="
 "
 
 LLVM_COMPONENTS=( llvm cmake third-party )
+use polly && LLVM_COMPONENTS+=( polly )
 LLVM_MANPAGES=1
 LLVM_USE_TARGETS=provide
 llvm.org_set_globals
@@ -358,10 +358,11 @@ get_distribution_components() {
 		use debuginfod && out+=(
 			llvm-debuginfod
 		)
-		use polly && out+=(
-			polly
-		)
 	fi
+	
+	use polly && out+=(
+		polly
+	)
 
 	printf "%s${sep}" "${out[@]}"
 }
@@ -445,6 +446,11 @@ multilib_src_configure() {
 
 	use test && mycmakeargs+=(
 		-DLLVM_LIT_ARGS="$(get_lit_flags)"
+	)
+
+	use polly && mycmakeargs+=(
+		-DLLVM_ENABLE_POLLY=ON
+		-DPOLLY_BUILD_SHARED_LIBS=OFF
 	)
 
 	if multilib_is_native_abi; then

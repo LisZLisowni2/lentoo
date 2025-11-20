@@ -21,7 +21,7 @@ LICENSE="Apache-2.0-with-LLVM-exceptions UoI-NCSA BSD public-domain rc"
 SLOT="${LLVM_MAJOR}/${LLVM_SOABI}"
 KEYWORDS="~amd64 ~arm ~arm64 ~loong ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86 ~amd64-linux ~arm64-macos ~ppc-macos ~x64-macos"
 IUSE="
-	+binutils-plugin debug debuginfod doc exegesis libedit +libffi
+	+binutils-plugin debug debuginfod doc exegesis libedit +libffi +polly
 	test xml z3 zstd
 "
 RESTRICT="!test? ( test )"
@@ -65,6 +65,7 @@ PDEPEND="
 "
 
 LLVM_COMPONENTS=( llvm cmake third-party )
+use polly && LLVM_COMPONENTS+=( polly )
 LLVM_MANPAGES=1
 LLVM_USE_TARGETS=provide
 llvm.org_set_globals
@@ -367,6 +368,10 @@ get_distribution_components() {
 		)
 	fi
 
+	use polly && out+=(
+		polly
+	)
+
 	printf "%s${sep}" "${out[@]}"
 }
 
@@ -446,6 +451,11 @@ multilib_src_configure() {
 
 	use test && mycmakeargs+=(
 		-DLLVM_LIT_ARGS="$(get_lit_flags)"
+	)
+
+	use polly && mycmakeargs+=(
+		-DLLVM_ENABLE_POLLY=ON
+		-DPOLLY_BUILD_SHARED_LIBS=OFF
 	)
 
 	if multilib_is_native_abi; then
