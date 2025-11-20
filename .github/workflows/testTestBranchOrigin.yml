@@ -15,6 +15,7 @@ jobs:
             - name: Check if commits exist in test branch
               run: |
                   git fetch origin test
+                  git fetch origin main
                   for commit in $(git rev-list origin/main..HEAD); do
                     if ! git branch -r --list $commit | grep -q "origin/test"; then
                       echo "Error: Commit $commit not in testing branch"
