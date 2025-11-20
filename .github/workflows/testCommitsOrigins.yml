@@ -18,16 +18,14 @@ jobs:
                   git switch test
                   COMMITS_TO_CHECK=$(git rev-list origin/main..HEAD)
 
-                  if [ -z "$COMMITS_TO_CHECK" ]; then
-                      echo "Info: No new commits to check."
+                  if [[ -z "$COMMITS_TO_CHECK" ]]; then
+                      echo "[Info] No new commits to check."
                       exit 0
                   fi
 
-                  echo "Commits to check: ${COMMITS_TO_CHECK[@]}"
-
                   for commit in $COMMITS_TO_CHECK; do
                     if ! git merge-base --is-ancestor "$commit" origin/test; then
-                      echo "Error: Commit $commit not in testing branch"
+                      echo "[Error] Commit $commit not in testing branch"
                       exit 1
                     fi
                   done
