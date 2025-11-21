@@ -65,7 +65,6 @@ PDEPEND="
 "
 
 LLVM_COMPONENTS=( llvm cmake third-party )
-use polly && LLVM_COMPONENTS+=( polly )
 LLVM_MANPAGES=1
 LLVM_USE_TARGETS=provide
 llvm.org_set_globals
@@ -366,13 +365,13 @@ get_distribution_components() {
 		use xml && out+=(
 			llvm-mt
 		)
-	fi
 
-	use polly && out+=(
-		# polly
-		polly
-		polly-opt
-	)
+		use polly && out+=(
+			# polly
+			polly
+			polly-opt
+		)
+	fi
 
 	printf "%s${sep}" "${out[@]}"
 }
@@ -457,7 +456,10 @@ multilib_src_configure() {
 
 	use polly && mycmakeargs+=(
 		-DLLVM_ENABLE_POLLY=ON
+		-DPOLLY_BUILD_SHARED_LIBS=OFF
 	)
+
+	use polly && LLVM_COMPONENTS+=( polly )
 
 	if multilib_is_native_abi; then
 		local build_docs=OFF
