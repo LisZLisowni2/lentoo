@@ -11,11 +11,14 @@ jobs:
         steps:
             - name: Checkout overlay
               uses: actions/checkout@v3
+              with:
+                fetch-depth: 0
 
             - name: Check if commits exist in test branch
               run: |
                   git fetch origin
-                  git switch test
+                  COMPARE_BRANCH="${{ github.event.pull_request.head.ref }}"
+                  git switch -C "$COMPARE_BRANCH" "origin/$COMPARE_BRANCH"
                   COMMITS_TO_CHECK=$(git rev-list origin/main..HEAD)
 
                   if [[ -z "$COMMITS_TO_CHECK" ]]; then
