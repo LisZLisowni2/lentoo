@@ -11,6 +11,8 @@ jobs:
         steps:
             - name: Checkout overlay
               uses: actions/checkout@v3
+              with:
+                fetch-depth: 0
 
             - name: Check if commits exist in test branch
               run: |
