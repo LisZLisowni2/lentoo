@@ -21,7 +21,7 @@ LICENSE="Apache-2.0-with-LLVM-exceptions UoI-NCSA BSD public-domain rc"
 SLOT="${LLVM_MAJOR}/${LLVM_SOABI}"
 KEYWORDS="~amd64 ~arm ~arm64 ~loong ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86 ~amd64-linux ~arm64-macos ~ppc-macos ~x64-macos"
 IUSE="
-	+binutils-plugin debug debuginfod doc exegesis libedit +libffi +polly
+	+binutils-plugin debug debuginfod doc exegesis libedit +libffi polly
 	test xml z3 zstd
 "
 RESTRICT="!test? ( test )"
@@ -364,12 +364,6 @@ get_distribution_components() {
 		)
 		use xml && out+=(
 			llvm-mt
-		)
-
-		use polly && out+=(
-			# polly
-			polly
-			polly-opt
 		)
 	fi
 
