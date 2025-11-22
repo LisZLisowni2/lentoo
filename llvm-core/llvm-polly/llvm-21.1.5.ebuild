@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python3_{11..14} )
 inherit cmake flag-o-matic llvm.org multilib-minimal pax-utils python-any-r1
 inherit toolchain-funcs
 
-DESCRIPTION="Low Level Virtual Machine"
+DESCRIPTION="Low Level Virtual Machine with Polly enabled"
 HOMEPAGE="https://llvm.org/"
 
 # Additional licenses:
@@ -19,9 +19,9 @@ HOMEPAGE="https://llvm.org/"
 
 LICENSE="Apache-2.0-with-LLVM-exceptions UoI-NCSA BSD public-domain rc"
 SLOT="${LLVM_MAJOR}/${LLVM_SOABI}"
-KEYWORDS="amd64 arm arm64 ~loong ~mips ppc ppc64 ~riscv ~sparc x86 ~amd64-linux ~arm64-macos ~ppc-macos ~x64-macos"
+KEYWORDS="~amd64 ~arm ~arm64 ~loong ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86 ~amd64-linux ~arm64-macos ~ppc-macos ~x64-macos"
 IUSE="
-	+binutils-plugin debug debuginfod doc exegesis libedit +libffi polly
+	+binutils-plugin debug debuginfod doc exegesis libedit +libffi +polly
 	test xml z3 zstd
 "
 RESTRICT="!test? ( test )"
@@ -64,7 +64,7 @@ PDEPEND="
 	binutils-plugin? ( >=llvm-core/llvmgold-${LLVM_MAJOR} )
 "
 
-LLVM_COMPONENTS=( llvm cmake third-party )
+LLVM_COMPONENTS=( llvm cmake third-party polly polly-opt )
 LLVM_MANPAGES=1
 LLVM_USE_TARGETS=provide
 llvm.org_set_globals
@@ -162,6 +162,10 @@ check_distribution_components() {
 					llvm-debuginfod)
 						use debuginfod || continue
 						;;
+					# used only w/ USE=xml
+					llvm-mt)
+						use xml || continue
+						;;
 				esac
 
 				all_targets+=( "${l}" )
@@ -244,6 +248,7 @@ get_distribution_components() {
 
 			# utilities
 			llvm-tblgen
+			llvm-test-mustache-spec
 			FileCheck
 			llvm-PerfectShuffle
 			count
@@ -297,8 +302,8 @@ get_distribution_components() {
 			llvm-mc
 			llvm-mca
 			llvm-ml
+			llvm-ml64
 			llvm-modextract
-			llvm-mt
 			llvm-nm
 			llvm-objcopy
 			llvm-objdump
@@ -357,12 +362,10 @@ get_distribution_components() {
 		use debuginfod && out+=(
 			llvm-debuginfod
 		)
+		use xml && out+=(
+			llvm-mt
+		)
 	fi
-	
-	use polly && out+=(
-		polly
-		polly-opt
-	)
 
 	printf "%s${sep}" "${out[@]}"
 }
@@ -416,9 +419,6 @@ multilib_src_configure() {
 
 		-DLLVM_HOST_TRIPLE="${CHOST}"
 
-		-DFFI_INCLUDE_DIR="${ffi_cflags#-I}"
-		-DFFI_LIBRARY_DIR="${ffi_ldflags#-L}"
-
 		-DPython3_EXECUTABLE="${PYTHON}"
 
 		# disable OCaml bindings (now in dev-ml/llvm)
@@ -447,13 +447,6 @@ multilib_src_configure() {
 	use test && mycmakeargs+=(
 		-DLLVM_LIT_ARGS="$(get_lit_flags)"
 	)
-
-	use polly && mycmakeargs+=(
-		-DLLVM_ENABLE_POLLY=ON
-		-DPOLLY_BUILD_SHARED_LIBS=OFF
-	)
-
-	use polly && LLVM_COMPONENTS+=( polly )
 
 	if multilib_is_native_abi; then
 		local build_docs=OFF

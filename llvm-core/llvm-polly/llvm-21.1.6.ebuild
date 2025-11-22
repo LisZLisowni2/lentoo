@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python3_{11..14} )
 inherit cmake flag-o-matic llvm.org multilib-minimal pax-utils python-any-r1
 inherit toolchain-funcs
 
-DESCRIPTION="Low Level Virtual Machine"
+DESCRIPTION="Low Level Virtual Machine with Polly enabled"
 HOMEPAGE="https://llvm.org/"
 
 # Additional licenses:
@@ -18,10 +18,10 @@ HOMEPAGE="https://llvm.org/"
 # 4. ConvertUTF.h: TODO.
 
 LICENSE="Apache-2.0-with-LLVM-exceptions UoI-NCSA BSD public-domain rc"
-SLOT="${LLVM_MAJOR}/${LLVM_SOABI}"
+SLOT="${LLVM_MAJOR}/${LLVM_SOABI}-polly"
 KEYWORDS="~amd64 ~arm ~arm64 ~loong ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86 ~amd64-linux ~arm64-macos ~ppc-macos ~x64-macos"
 IUSE="
-	+binutils-plugin debug debuginfod doc exegesis libedit +libffi +polly
+	+binutils-plugin debug debuginfod doc exegesis libedit +libffi polly
 	test xml z3 zstd
 "
 RESTRICT="!test? ( test )"
@@ -64,7 +64,7 @@ PDEPEND="
 	binutils-plugin? ( >=llvm-core/llvmgold-${LLVM_MAJOR} )
 "
 
-LLVM_COMPONENTS=( llvm cmake third-party )
+LLVM_COMPONENTS=( llvm cmake third-party polly polly-opt )
 LLVM_MANPAGES=1
 LLVM_USE_TARGETS=provide
 llvm.org_set_globals
@@ -367,11 +367,6 @@ get_distribution_components() {
 		)
 	fi
 
-	use polly && out+=(
-		polly
-		polly-opt
-	)
-
 	printf "%s${sep}" "${out[@]}"
 }
 
@@ -452,13 +447,6 @@ multilib_src_configure() {
 	use test && mycmakeargs+=(
 		-DLLVM_LIT_ARGS="$(get_lit_flags)"
 	)
-
-	use polly && mycmakeargs+=(
-		-DLLVM_ENABLE_POLLY=ON
-		-DPOLLY_BUILD_SHARED_LIBS=OFF
-	)
-
-	use polly && LLVM_COMPONENTS+=( polly )
 
 	if multilib_is_native_abi; then
 		local build_docs=OFF
