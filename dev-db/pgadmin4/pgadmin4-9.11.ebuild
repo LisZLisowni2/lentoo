@@ -19,45 +19,14 @@ SLOT="$(ver_cut 1)"
 IUSE="kerberos doc server desktop"
 
 RDEPEND="
-    ${PYTHON_DEPS}
-    dev-python/flask[${PYTHON_USEDEP}]
-    dev-python/flask-login[${PYTHON_USEDEP}]
-    dev-python/flask-sqlalchemy[${PYTHON_USEDEP}]
-    dev-python/flask-wtf[${PYTHON_USEDEP}]
-    dev-python/flask-mail[${PYTHON_USEDEP}]
-    dev-python/flask-migrate[${PYTHON_USEDEP}]
-    dev-python/flask-paranoid[${PYTHON_USEDEP}]
-    dev-python/flask-compress[${PYTHON_USEDEP}]
-    dev-python/flask-babel[${PYTHON_USEDEP}]
-    dev-python/wtforms[${PYTHON_USEDEP}]
-    dev-python/sqlalchemy[${PYTHON_USEDEP}]
-    dev-python/psycopg:2[${PYTHON_USEDEP}]
-    dev-python/psycopg:3[${PYTHON_USEDEP}]
-    dev-python/cryptography[${PYTHON_USEDEP}]
-    dev-python/paramiko[${PYTHON_USEDEP}]
-    dev-python/bcrypt[${PYTHON_USEDEP}]
-    dev-python/pyotp[${PYTHON_USEDEP}]
-    dev-python/qrcode[${PYTHON_USEDEP}]
-    dev-python/pillow[${PYTHON_USEDEP}]
-    dev-python/simplejson[${PYTHON_USEDEP}]
-    dev-python/user-agents[${PYTHON_USEDEP}]
-    dev-python/dnspython[${PYTHON_USEDEP}]
-    dev-python/sshtunnel[${PYTHON_USEDEP}]
-    dev-python/ldap3[${PYTHON_USEDEP}]
-    dev-python/gssapi[${PYTHON_USEDEP}]
-    kerberos? ( dev-python/flask-kerberos[${PYTHON_USEDEP}] )
-    server? ( acct-user/pgadmin acct-group/pgadmin )
+    dev-python/flask
+    
+    net-libs/nodejs
 "
 
 DEPEND="${RDEPEND}"
 
-BDEPEND="
-    ${PYTHON_DEPS}
-    doc? (
-        dev-python/sphinx[${PYTHON_USEDEP}]
-        dev-python/sphinxcontrib-youtube[${PYTHON_USEDEP}]
-    )
-"
+BDEPEND=""
 
 PGADMIN_INSTALLDIR="/usr/lib/${PN}-${SLOT}"
 PGADMIN_DATADIR="/var/lib/${PN}"
